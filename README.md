@@ -42,7 +42,7 @@ Include `rubywebserv` in your node's `run_list`:
 - Author:: Fahd Sultan (<fahdsultan@gmail.com>)
 
 ```text
-Copyright 2008-2014, Opscode, Inc
+Copyright 2014 Fahd Sultan
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
