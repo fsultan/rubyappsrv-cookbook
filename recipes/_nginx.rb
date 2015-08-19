@@ -23,14 +23,8 @@ deployment_env = node['rubywebserv']['app_env']
 #node.default['rbenv']['rubies'] = ["#{node.rubywebserv.ruby.version}"]
 #node.default['rbenv']['global'] = node['rubywebserv']['ruby']['version'] 
 
-#include_recipe 'rbenv'
-#rbenv_global node['rubywebserv']['ruby']['version'] 
-
-#node.override['nginx']['version'] = '1.6.2'
-#node.default['nginx']['source']['version']  = '1.6.2'
-#node.default['nginx']['source']['checksum'] = 'b5608c2959d3e7ad09b20fc8f9e5bd4bc87b3bc8ba5936a513c04ed8f1391a18'
-#node.default['nginx']['source']['url'] = "http://nginx.org/download/nginx-#{node['nginx']['source']['version']}.tar.gz"
-#node.override['nginx']['source']['url'] = "http://nginx.org/download/nginx-1.6.2.tar.gz"
+include_recipe 'rbenv::default'
+ENV['CONFIGURE_OPTS'] = '--disable-install-rdoc'
 
 node.default['nginx']['passenger']['version'] = node['rubywebserv']['passenger']['version']
 node.default['nginx']['source']['modules'] = [
@@ -49,12 +43,33 @@ node.default['nginx']['passenger']['ruby'] = "#{ruby_path}/bin/ruby"
 node.default['nginx']['passenger']['root'] = \
   "#{ruby_path}/lib/ruby/gems/#{gem_version}/gems/passenger-#{node.rubywebserv.passenger.version}"
 
+#install passenger gem first, with rbenv
+
+rbenv_gem 'passenger' do
+  ruby_version node['rubywebserv']['ruby']['version']
+  action     :install
+  if node['rubywebserv']['passenger']['version']
+    version node['rubywebserv']['passenger']['version']
+  end
+end
+
+node.default['nginx']['source']['default_configure_flags'].push("--add-module=#{node['nginx']['passenger']['root']}/ext/nginx")
+
+package "libcurl4-openssl-dev"
+
 include_recipe 'nginx::source'
+
+template "#{node['nginx']['dir']}/conf.d/passenger.conf" do
+  source 'nginx_passenger.conf.erb'
+  owner  'root'
+  group  node['root_group']
+  mode   '0644'
+  notifies :reload, 'service[nginx]', :delayed
+end
 
 # nginx_site 'default' creates a default site in conf.d/defaut.conf file is
 # created overides sites in sites-enabled.d/
 nginx_site 'default' do
   enable false
 end
-
 

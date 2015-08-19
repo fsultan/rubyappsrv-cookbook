@@ -17,6 +17,7 @@
 # limitations under the License.
 #
 
+include_recipe "rubyappsrv::default"
 
 #TODO if support postgresql
 package 'postgresql-client'
@@ -26,6 +27,6 @@ package 'libpq-dev'
 #TODO if support mysql
 #package "mysql-client"
 include_recipe "apt::default"
-include_recipe "rubywebserv::_passenger"
+include_recipe "rubywebserv::_rbenv"
 include_recipe "rubywebserv::_nginx"
 
